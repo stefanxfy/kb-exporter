@@ -270,6 +270,24 @@ class KBExporter:
 
         tag = element.name
 
+        # Check for draw.io macro before other processing
+        macro_name = element.get('data-macro-name', '')
+        if macro_name and 'drawio' in macro_name.lower():
+            # Extract image URL from draw.io macro JavaScript
+            from urllib.parse import unquote
+            html_str = str(element)
+            drawio_pattern = r"readerOpts\.imageUrl\s*=\s*''\s*\+\s*'([^']*)'"
+            matches = list(re.finditer(drawio_pattern, html_str))
+            if matches:
+                # Generate markdown for each image found
+                result = ""
+                for match in matches:
+                    img_url = match.group(1)
+                    decoded_url = unquote(img_url)
+                    filename = decoded_url.split('/')[-1].split('?')[0]
+                    result += f"\n![图片]({image_prefix}{filename})\n"
+                return result
+
         # Confluence code block - handle before other elements
         classes = element.get('class', [])
         if isinstance(classes, list):
@@ -362,18 +380,55 @@ class KBExporter:
 
         # Table wrapper div - try to extract table from it
         if tag == 'div' and 'table-wrap' in class_str:
+            result = ""
+
+            # First, check for draw.io macros in the table-wrap
+            drawio_macros = element.find_all('div', attrs={'data-macro-name': lambda x: x and 'drawio' in str(x).lower()})
+            if drawio_macros:
+                for macro in drawio_macros:
+                    from urllib.parse import unquote
+                    html_str = str(macro)
+                    drawio_pattern = r"readerOpts\.imageUrl\s*=\s*''\s*\+\s*'([^']*)'"
+                    matches = list(re.finditer(drawio_pattern, html_str))
+                    for match in matches:
+                        img_url = match.group(1)
+                        decoded_url = unquote(img_url)
+                        filename = decoded_url.split('/')[-1].split('?')[0]
+                        result += f"\n![图片]({image_prefix}{filename})\n"
+
+            # Then process the table
             table = element.find('table')
             if table:
-                return self.process_element(table, image_prefix)
+                table_md = self.process_element(table, image_prefix)
+                result += table_md
+
+            return result
 
         # Paragraph
         if tag == 'p':
             result = ""
+
+            # Check for draw.io macros first
+            drawio_macros = element.find_all('div', attrs={'data-macro-name': lambda x: x and 'drawio' in str(x).lower()})
+            if drawio_macros:
+                # Process draw.io macros
+                for macro in drawio_macros:
+                    from urllib.parse import unquote
+                    html_str = str(macro)
+                    drawio_pattern = r"readerOpts\.imageUrl\s*=\s*''\s*\+\s*'([^']*)'"
+                    matches = list(re.finditer(drawio_pattern, html_str))
+                    for match in matches:
+                        img_url = match.group(1)
+                        decoded_url = unquote(img_url)
+                        filename = decoded_url.split('/')[-1].split('?')[0]
+                        result += f"\n![图片]({image_prefix}{filename})\n"
+
+            # Check for regular images
             imgs = element.find_all('img')
             text_content = element.get_text(strip=True)
 
-            # Pure image paragraph
-            if imgs and not text_content:
+            # Pure image paragraph (no draw.io, only regular images)
+            if not drawio_macros and imgs and not text_content:
                 for img in imgs:
                     filename = self.get_image_filename(img)
                     if filename:
@@ -406,8 +461,9 @@ class KBExporter:
                     if str(child).strip():
                         result += str(child).strip()
 
+            # Return result if there's any content (including draw.io images)
             if result.strip():
-                return result.strip() + "\n"
+                return result + "\n"
 
         # Standalone image
         if tag == 'img':
