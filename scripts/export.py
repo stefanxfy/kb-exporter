@@ -273,6 +273,41 @@ class KBExporter:
                     lines.append(f"{i}. {text}")
             return '\n'.join(lines) + '\n\n'
 
+        # Table
+        if tag == 'table':
+            rows = []
+            # Find all rows (including inside thead/tbody)
+            for tr in element.find_all('tr'):
+                cells = []
+                # Get all cells (th or td)
+                for cell in tr.find_all(['th', 'td'], recursive=False):
+                    # Get cell content as text
+                    cell_text = cell.get_text(strip=True)
+                    cells.append(cell_text)
+                if cells:
+                    rows.append(cells)
+
+            if not rows:
+                return ""
+
+            # Build markdown table
+            result = []
+            # Header row
+            result.append('| ' + ' | '.join(rows[0]) + ' |')
+            # Separator row
+            result.append('| ' + ' | '.join(['---'] * len(rows[0])) + ' |')
+            # Data rows
+            for row in rows[1:]:
+                result.append('| ' + ' | '.join(row) + ' |')
+
+            return '\n'.join(result) + '\n\n'
+
+        # Table wrapper div - try to extract table from it
+        if tag == 'div' and 'table-wrap' in class_str:
+            table = element.find('table')
+            if table:
+                return self.process_element(table, image_prefix)
+
         # Paragraph
         if tag == 'p':
             result = ""
