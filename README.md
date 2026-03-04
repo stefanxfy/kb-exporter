@@ -29,19 +29,11 @@ pip3 install requests beautifulsoup4
 
 ### 2. 安装 Skill
 
-**方法一：使用安装脚本（推荐）**
-
 ```bash
 ./install.sh
 ```
 
-**方法二：手动安装**
-
-```bash
-mkdir -p ~/.claude/skills/kb-exporter/scripts
-cp SKILL.md ~/.claude/skills/kb-exporter/
-cp scripts/export.py ~/.claude/skills/kb-exporter/scripts/
-```
+脚本会自动创建 `~/.claude/skills/kb-exporter/` 目录并复制所需文件。
 
 ---
 
