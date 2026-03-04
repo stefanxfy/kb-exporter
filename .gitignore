@@ -1,0 +1,16 @@
+# Exported KB articles
+*.md
+!README.md
+!SKILL.md
+
+# Image directories
+images/
+**/images/
+
+# Python
+__pycache__/
+*.py[cod]
+*.so
+.Python
+venv/
+env/
