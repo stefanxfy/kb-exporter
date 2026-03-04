@@ -80,6 +80,8 @@ Claude: [批量导出所有页面并下载图片]
 
 ### Cookie 配置
 
+**Cookie 存储位置：** `~/.kb_cache/cookies.json`
+
 当首次使用时，如果检测到 cookie 无效或过期，会提示你提供 JSESSIONID：
 
 ```
@@ -87,7 +89,7 @@ Claude: Cookie 已过期，请提供新的 JSESSIONID
 
 你: JSESSIONID=ABC123...
 
-Claude: ✓ Cookie 已更新并保存
+Claude: ✓ Cookie 已更新并保存到 ~/.kb_cache/cookies.json
 ```
 
 **获取 JSESSIONID 的方法**：
