@@ -540,14 +540,21 @@ class KBExporter:
         # Sanitize title for directory name
         safe_title = self.sanitize_filename(title)
 
-        # Create article directory
-        article_dir = Path(output_dir) / safe_title
-        article_dir.mkdir(parents=True, exist_ok=True)
+        # Determine output structure based on whether there are images
+        has_images = download_images and images
+        if has_images:
+            # Create article directory for images
+            article_dir = Path(output_dir) / safe_title
+            article_dir.mkdir(parents=True, exist_ok=True)
+            image_dir = article_dir / "images"
+            filepath = article_dir / f"{safe_title}.md"
+        else:
+            # No images - save directly to output directory
+            filepath = Path(output_dir) / f"{safe_title}.md"
 
         # Download images
-        image_dir = article_dir / "images"
         downloaded = []
-        if download_images and images:
+        if has_images:
             image_dir.mkdir(exist_ok=True)
             print(f"\nDownloading {len(images)} images...")
             for i, img_info in enumerate(images, 1):
@@ -572,7 +579,6 @@ images: {len(downloaded)}
         markdown = frontmatter + markdown
 
         # Save file
-        filepath = article_dir / f"{safe_title}.md"
 
         with open(filepath, 'w', encoding='utf-8') as f:
             f.write(markdown)

@@ -97,11 +97,15 @@ python scripts/export.py <url> --no-images
 
 **Directory structure:**
 ```
+# 有图片
 {文章标题}/
 ├── {文章标题}.md       # Markdown 文档
 └── images/            # 图片目录
     ├── image1.png
     └── image2.png
+
+# 无图片
+{文章标题}.md           # 直接在输出目录
 ```
 
 **Frontmatter included:**
