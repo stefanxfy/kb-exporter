@@ -264,7 +264,10 @@ class KBExporter:
                     code_text = pre_elem.get_text()
                     import html as html_module
                     escaped_code = html_module.escape(code_text)
-                    parts.append(f'<pre><code class="language-{lang}">{escaped_code}</code></pre>')
+                    # In table cells, use <br> for line breaks (no <pre> to avoid breaking table structure)
+                    code_with_br = escaped_code.replace('\n', '<br>')
+                    # Use simple <code> tag with <br> for line breaks
+                    parts.append(f'<code>{code_with_br}</code>')
                     processed_elements.add(code_block)
                 else:
                     # Fallback: try syntaxhighlighter div structure (old format)
@@ -293,18 +296,19 @@ class KBExporter:
 
                         if code_lines:
                             code_text = '\n'.join(code_lines)
-                            # In table cells, use HTML for code blocks since markdown ``` doesn't work well
-                            # Escape HTML special characters
+                            # In table cells, use <br> for line breaks (no <pre> to avoid breaking table structure)
                             import html as html_module
                             escaped_code = html_module.escape(code_text)
-                            parts.append(f'<pre><code class="language-{lang}">{escaped_code}</code></pre>')
+                            code_with_br = escaped_code.replace('\n', '<br>')
+                            parts.append(f'<code>{code_with_br}</code>')
                             processed_elements.add(code_block)
                     else:
                         # Final fallback: get all text
                         code_text = code_content.get_text('\n')
                         import html as html_module
                         escaped_code = html_module.escape(code_text)
-                        parts.append(f'<pre><code class="language-{lang}">{escaped_code}</code></pre>')
+                        code_with_br = escaped_code.replace('\n', '<br>')
+                        parts.append(f'<code>{code_with_br}</code>')
                         processed_elements.add(code_block)
 
         # Check for draw.io macros
