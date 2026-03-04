@@ -234,10 +234,24 @@ class KBExporter:
         return title, content_div, images
 
     def _process_table_cell(self, cell, image_prefix="images/"):
-        """Process table cell content - handle text and images"""
+        """Process table cell content - handle text, images, and draw.io macros"""
         parts = []
 
-        # Check for images first
+        # Check for draw.io macros first (before processing anything else)
+        drawio_macros = cell.find_all('div', attrs={'data-macro-name': lambda x: x and 'drawio' in str(x).lower()})
+        if drawio_macros:
+            for macro in drawio_macros:
+                from urllib.parse import unquote
+                html_str = str(macro)
+                drawio_pattern = r"readerOpts\.imageUrl\s*=\s*''\s*\+\s*'([^']*)'"
+                matches = list(re.finditer(drawio_pattern, html_str))
+                for match in matches:
+                    img_url = match.group(1)
+                    decoded_url = unquote(img_url)
+                    filename = decoded_url.split('/')[-1].split('?')[0]
+                    parts.append(f"![图片]({image_prefix}{filename})")
+
+        # Check for regular images
         imgs = cell.find_all('img')
         if imgs:
             for img in imgs:
@@ -251,6 +265,9 @@ class KBExporter:
         # Remove images from the copy
         for img in cell_copy.find_all('img'):
             img.decompose()
+        # Remove drawio divs from the copy
+        for div in cell_copy.find_all('div', attrs={'data-macro-name': lambda x: x and 'drawio' in str(x).lower()}):
+            div.decompose()
         # Get remaining text
         text = cell_copy.get_text(strip=True)
         if text:
@@ -380,29 +397,9 @@ class KBExporter:
 
         # Table wrapper div - try to extract table from it
         if tag == 'div' and 'table-wrap' in class_str:
-            result = ""
-
-            # First, check for draw.io macros in the table-wrap
-            drawio_macros = element.find_all('div', attrs={'data-macro-name': lambda x: x and 'drawio' in str(x).lower()})
-            if drawio_macros:
-                for macro in drawio_macros:
-                    from urllib.parse import unquote
-                    html_str = str(macro)
-                    drawio_pattern = r"readerOpts\.imageUrl\s*=\s*''\s*\+\s*'([^']*)'"
-                    matches = list(re.finditer(drawio_pattern, html_str))
-                    for match in matches:
-                        img_url = match.group(1)
-                        decoded_url = unquote(img_url)
-                        filename = decoded_url.split('/')[-1].split('?')[0]
-                        result += f"\n![图片]({image_prefix}{filename})\n"
-
-            # Then process the table
             table = element.find('table')
             if table:
-                table_md = self.process_element(table, image_prefix)
-                result += table_md
-
-            return result
+                return self.process_element(table, image_prefix)
 
         # Paragraph
         if tag == 'p':
