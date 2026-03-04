@@ -98,3 +98,45 @@ Claude: ✓ Cookie 已更新并保存
 - **图片**: 下载到 `./images/` 子目录
 - **图片引用**: `![图片](images/filename.png)`
 - **代码块**: 支持 Confluence 代码格式，自动提取文件名
+
+---
+
+## 本地开发
+
+### 项目结构
+
+```
+kb-exporter/
+├── SKILL.md              # Skill 定义文件（元数据和使用说明）
+├── INSTALL.md            # 安装指南
+├── scripts/
+│   └── export.py         # 导出脚本（核心逻辑）
+└── kb-exporter.skill     # 打包后的 skill 文件
+```
+
+### 修改后重新打包
+
+修改 `SKILL.md` 或 `scripts/export.py` 后，需要重新打包 skill：
+
+```bash
+# 使用 skill-creator 的打包脚本
+python3 ~/.claude/plugins/cache/anthropic-agent-skills/example-skills/69c0b1a06741/skills/skill-creator/scripts/package_skill.py /Users/fanyunxu/Desktop/myproject/mystudy/MyRiseChronicle/kb-exporter
+```
+
+打包成功后会生成新的 `kb-exporter.skill` 文件。
+
+### 重新安装
+
+```bash
+# 覆盖安装到 skills 目录
+cp kb-exporter.skill ~/.claude/skills/
+
+# 重启 Claude Code 使更改生效
+```
+
+### 开发建议
+
+1. **修改 SKILL.md** - 更新 skill 描述或使用说明时修改
+2. **修改 scripts/export.py** - 调整导出逻辑、添加新功能时修改
+3. **测试** - 安装后在对话中测试功能是否符合预期
+4. **提交** - 测试通过后提交到 GitHub
