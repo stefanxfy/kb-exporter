@@ -205,6 +205,36 @@ class KBExporter:
 
         return title, content_div, images
 
+    def _process_table_cell(self, cell, image_prefix="images/"):
+        """Process table cell content - handle text and images"""
+        parts = []
+
+        # Check for images first
+        imgs = cell.find_all('img')
+        if imgs:
+            for img in imgs:
+                filename = self.get_image_filename(img)
+                if filename:
+                    parts.append(f"![图片]({image_prefix}{filename})")
+
+        # Get text content (excluding images)
+        # Create a copy to modify
+        cell_copy = cell.__copy__()
+        # Remove images from the copy
+        for img in cell_copy.find_all('img'):
+            img.decompose()
+        # Get remaining text
+        text = cell_copy.get_text(strip=True)
+        if text:
+            parts.append(text)
+
+        # If no content, return empty string
+        if not parts:
+            return ""
+
+        # Join parts - if both text and images, put text first
+        return " ".join(parts)
+
     def process_element(self, element, image_prefix="images/"):
         """Convert HTML element to Markdown"""
         if not element or not hasattr(element, 'name'):
@@ -281,9 +311,9 @@ class KBExporter:
                 cells = []
                 # Get all cells (th or td)
                 for cell in tr.find_all(['th', 'td'], recursive=False):
-                    # Get cell content as text
-                    cell_text = cell.get_text(strip=True)
-                    cells.append(cell_text)
+                    # Process cell content - handle text and images
+                    cell_content = self._process_table_cell(cell, image_prefix)
+                    cells.append(cell_content)
                 if cells:
                     rows.append(cells)
 
