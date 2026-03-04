@@ -234,13 +234,83 @@ class KBExporter:
         return title, content_div, images
 
     def _process_table_cell(self, cell, image_prefix="images/"):
-        """Process table cell content - handle text, images, and draw.io macros"""
+        """Process table cell content - handle text, images, draw.io macros, and code blocks"""
         parts = []
+        processed_elements = set()
 
-        # Check for draw.io macros first (before processing anything else)
+        # Process code blocks first (they contain complex nested structures)
+        # Use data-macro-name attribute to find code blocks
+        code_blocks = cell.find_all('div', attrs={'data-macro-name': 'code'})
+        for code_block in code_blocks:
+            # Get code content
+            code_content = code_block.find('div', class_='codeContent')
+            if code_content:
+                # Default language
+                lang = 'bash'
+
+                # Try to find pre with syntaxhighlighter params
+                pre_elem = code_content.find('pre', class_='syntaxhighlighter-pre')
+                if pre_elem and pre_elem.get('data-syntaxhighlighter-params'):
+                    # Extract language from params like "brush: yml; gutter: false; ..."
+                    params = pre_elem.get('data-syntaxhighlighter-params', '')
+                    brush_match = re.search(r'brush:\s*(\w+)', params)
+                    if brush_match:
+                        lang = brush_match.group(1).lower()
+                        # Map common aliases
+                        lang_map = {'yml': 'yaml', 'js': 'javascript', 'ts': 'typescript', 'py': 'python'}
+                        lang = lang_map.get(lang, lang)
+
+                    # Get code text directly from pre
+                    code_text = pre_elem.get_text()
+                    import html as html_module
+                    escaped_code = html_module.escape(code_text)
+                    parts.append(f'<pre><code class="language-{lang}">{escaped_code}</code></pre>')
+                    processed_elements.add(code_block)
+                else:
+                    # Fallback: try syntaxhighlighter div structure (old format)
+                    # The code is in: table > tr > td.code > div.container > div.line > code
+                    syntax_div = code_content.find('div', class_='syntaxhighlighter')
+                    if syntax_div:
+                        # Try to extract language from syntax_div classes (e.g., "yml", "bash", "python")
+                        # Classes are like: "syntaxhighlighter sh-confluence nogutter yml expanded"
+                        classes = syntax_div.get('class', [])
+                        # Find common language names in classes
+                        language_map = ['yml', 'yaml', 'bash', 'sh', 'python', 'py', 'java', 'javascript', 'js', 'json', 'xml', 'html', 'css', 'sql', 'go', 'rust', 'c', 'cpp', 'typescript', 'ts']
+                        for c in classes:
+                            if c.lower() in language_map:
+                                lang = c.lower()
+                                break
+
+                        # Find all div.line elements - they have 'line' in their class
+                        lines = syntax_div.find_all('div', class_=lambda x: x and any('line' in str(c) for c in x) if x else False)
+                        code_lines = []
+                        for line_div in lines:
+                            # Get text from all code tags in this line
+                            code_tags = line_div.find_all('code')
+                            if code_tags:
+                                line_text = ''.join(c.get_text() for c in code_tags)
+                                code_lines.append(line_text)
+
+                        if code_lines:
+                            code_text = '\n'.join(code_lines)
+                            # In table cells, use HTML for code blocks since markdown ``` doesn't work well
+                            # Escape HTML special characters
+                            import html as html_module
+                            escaped_code = html_module.escape(code_text)
+                            parts.append(f'<pre><code class="language-{lang}">{escaped_code}</code></pre>')
+                            processed_elements.add(code_block)
+                    else:
+                        # Final fallback: get all text
+                        code_text = code_content.get_text('\n')
+                        import html as html_module
+                        escaped_code = html_module.escape(code_text)
+                        parts.append(f'<pre><code class="language-{lang}">{escaped_code}</code></pre>')
+                        processed_elements.add(code_block)
+
+        # Check for draw.io macros
         drawio_macros = cell.find_all('div', attrs={'data-macro-name': lambda x: x and 'drawio' in str(x).lower()})
-        if drawio_macros:
-            for macro in drawio_macros:
+        for macro in drawio_macros:
+            if macro not in processed_elements:
                 from urllib.parse import unquote
                 html_str = str(macro)
                 drawio_pattern = r"readerOpts\.imageUrl\s*=\s*''\s*\+\s*'([^']*)'"
@@ -250,24 +320,28 @@ class KBExporter:
                     decoded_url = unquote(img_url)
                     filename = decoded_url.split('/')[-1].split('?')[0]
                     parts.append(f"![图片]({image_prefix}{filename})")
+                processed_elements.add(macro)
 
         # Check for regular images
         imgs = cell.find_all('img')
-        if imgs:
-            for img in imgs:
-                filename = self.get_image_filename(img)
-                if filename:
-                    parts.append(f"![图片]({image_prefix}{filename})")
+        for img in imgs:
+            filename = self.get_image_filename(img)
+            if filename:
+                parts.append(f"![图片]({image_prefix}{filename})")
 
-        # Get text content (excluding images)
+        # Get text content (excluding processed elements)
         # Create a copy to modify
         cell_copy = cell.__copy__()
+        # Remove processed elements from the copy
+        for elem in processed_elements:
+            # Find and remove this element in the copy
+            for found in cell_copy.find_all(elem.name, class_=elem.get('class')):
+                if str(found) == str(elem):
+                    found.decompose()
+                    break
         # Remove images from the copy
         for img in cell_copy.find_all('img'):
             img.decompose()
-        # Remove drawio divs from the copy
-        for div in cell_copy.find_all('div', attrs={'data-macro-name': lambda x: x and 'drawio' in str(x).lower()}):
-            div.decompose()
         # Get remaining text
         text = cell_copy.get_text(strip=True)
         if text:
@@ -277,8 +351,19 @@ class KBExporter:
         if not parts:
             return ""
 
-        # Join parts - if both text and images, put text first
-        return " ".join(parts)
+        # Join parts - combine text and HTML code blocks
+        result = []
+        for p in parts:
+            p_str = str(p).strip()
+            if p_str:
+                # If it's HTML code block or starts with <, add as-is
+                if p_str.startswith('<'):
+                    result.append(p_str)
+                else:
+                    result.append(p_str)
+
+        # For table cells, join with spaces (not newlines)
+        return " ".join(result)
 
     def process_element(self, element, image_prefix="images/"):
         """Convert HTML element to Markdown"""
