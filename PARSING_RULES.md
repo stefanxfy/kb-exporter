@@ -287,19 +287,26 @@ escaped_code = html_module.escape(code_text)
 
 ---
 
-## 10. 开发历史
+## 附录：安装与使用
 
-### 最近优化
-1. **无图片文章不创建目录** - 节省空间
-2. **表格代码块支持** - 提取 syntaxhighlighter 格式
-3. **Draw.io 图片** - 从 JavaScript 提取 URL
-4. **代码块间距** - 前后添加 `<br>`
-5. **格式修复** - 使用 `<br>` 而非 `<pre>`
+### 安装 Skill
 
-### 提交记录
-- `8d7b080` - 添加代码块前后换行
-- `176e139` - 使用 `<br>` 替代 `<pre>`
-- `390a1b9` - 支持表格代码块
-- `b2b3c83` - 无图片不创建目录
-- `d9a7ccc` - 简化安装命令
-- `c990a5e` - 修正 cp 命令目录结构
+运行安装脚本自动安装到 Claude Code skills 目录：
+
+```bash
+./install.sh
+```
+
+脚本会自动：
+1. 创建 `~/.claude/skills/kb-exporter/` 目录
+2. 复制 `SKILL.md` 和 `scripts/export.py` 到正确位置
+
+### 更新 Skill
+
+修改代码后，重新运行安装脚本即可：
+
+```bash
+./install.sh
+```
+
+重启 Claude Code 使更改生效。
