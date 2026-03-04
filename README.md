@@ -29,10 +29,13 @@ pip3 install requests beautifulsoup4
 
 ### 2. 安装 Skill
 
-将 `kb-exporter.skill` 文件复制到 Claude Code 的 skills 目录：
+创建 skill 目录并复制文件：
 
 ```bash
-cp kb-exporter.skill ~/.claude/skills/
+mkdir -p ~/.claude/skills/kb-exporter
+cp SKILL.md scripts/export.py ~/.claude/skills/kb-exporter/
+mkdir -p ~/.claude/skills/kb-exporter/scripts
+mv ~/.claude/skills/kb-exporter/export.py ~/.claude/skills/kb-exporter/scripts/
 ```
 
 ---
@@ -118,28 +121,20 @@ Claude: ✓ Cookie 已更新并保存
 ```
 kb-exporter/
 ├── SKILL.md              # Skill 定义文件（元数据和使用说明）
-├── INSTALL.md            # 安装指南
-├── scripts/
-│   └── export.py         # 导出脚本（核心逻辑）
-└── kb-exporter.skill     # 打包后的 skill 文件
+├── README.md             # 安装指南
+├── .gitignore            # 忽略导出的文档
+└── scripts/
+    └── export.py         # 导出脚本（核心逻辑）
 ```
 
-### 修改后重新打包
+### 修改后重新安装
 
-修改 `SKILL.md` 或 `scripts/export.py` 后，需要重新打包 skill：
+修改 `SKILL.md` 或 `scripts/export.py` 后，直接复制到 skills 目录：
 
 ```bash
-# 使用 skill-creator 的打包脚本
-python3 ~/.claude/plugins/cache/anthropic-agent-skills/example-skills/69c0b1a06741/skills/skill-creator/scripts/package_skill.py /Users/fanyunxu/Desktop/myproject/mystudy/MyRiseChronicle/kb-exporter
+cp SKILL.md scripts/export.py ~/.claude/skills/kb-exporter/
+mkdir -p ~/.claude/skills/kb-exporter/scripts
+mv ~/.claude/skills/kb-exporter/export.py ~/.claude/skills/kb-exporter/scripts/
 ```
 
-打包成功后会生成新的 `kb-exporter.skill` 文件。
-
-### 重新安装
-
-```bash
-# 覆盖安装到 skills 目录
-cp kb-exporter.skill ~/.claude/skills/
-
-# 重启 Claude Code 使更改生效
-```
+重启 Claude Code 使更改生效。
