@@ -41,6 +41,8 @@ cp kb-exporter.skill ~/.claude/skills/
 
 安装后，直接在对话中分享 kb.cvte.com 链接即可：
 
+### 单个链接导出
+
 ```
 你: https://kb.cvte.com/pages/viewpage.action?pageId=495126015
 
@@ -51,6 +53,21 @@ Claude: 检测到 KB 链接，是否要导出为 Markdown 文档？
 Claude: [检查 cookie 状态]
      [如过期则询问新的 JSESSIONID]
      [执行导出并下载图片]
+```
+
+### 批量导出多个链接
+
+支持一次导出多个 KB 页面，只需分享多个链接：
+
+```
+你: https://kb.cvte.com/pages/viewpage.action?pageId=513731160
+     https://kb.cvte.com/pages/viewpage.action?pageId=490245476
+
+Claude: 检测到 2 个 KB 链接，是否要全部导出？
+
+你: 是
+
+Claude: [批量导出所有页面并下载图片]
 ```
 
 ### Cookie 配置
