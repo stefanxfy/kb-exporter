@@ -29,7 +29,13 @@ pip3 install requests beautifulsoup4
 
 ### 2. 安装 Skill
 
-创建 skill 目录并复制文件：
+**方法一：使用安装脚本（推荐）**
+
+```bash
+./install.sh
+```
+
+**方法二：手动安装**
 
 ```bash
 mkdir -p ~/.claude/skills/kb-exporter/scripts
@@ -121,6 +127,7 @@ Claude: ✓ Cookie 已更新并保存
 kb-exporter/
 ├── SKILL.md              # Skill 定义文件（元数据和使用说明）
 ├── README.md             # 安装指南
+├── install.sh            # 安装脚本
 ├── .gitignore            # 忽略导出的文档
 └── scripts/
     └── export.py         # 导出脚本（核心逻辑）
@@ -128,11 +135,10 @@ kb-exporter/
 
 ### 修改后重新安装
 
-修改 `SKILL.md` 或 `scripts/export.py` 后，直接复制到 skills 目录：
+修改 `SKILL.md` 或 `scripts/export.py` 后，重新运行安装脚本：
 
 ```bash
-cp SKILL.md ~/.claude/skills/kb-exporter/
-cp scripts/export.py ~/.claude/skills/kb-exporter/scripts/
+./install.sh
 ```
 
 重启 Claude Code 使更改生效。
