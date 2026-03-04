@@ -21,12 +21,6 @@ KB Exporter 是一个用于将 CVTE 知识库 (kb.cvte.com) 页面导出为 Mark
 pip3 install requests beautifulsoup4
 ```
 
-或使用 requirements.txt：
-
-```bash
-pip3 install -r requirements.txt
-```
-
 ### 2. 安装 Skill
 
 将 `kb-exporter.skill` 文件复制到 Claude Code 的 skills 目录：
@@ -54,14 +48,6 @@ cp kb-exporter.skill ~/my-skills/
 ```bash
 python3 scripts/export.py --cookie "JSESSIONID=你的值"
 ```
-
-**方式二：使用浏览器扩展**
-
-1. 安装 "Get cookies.txt LOCALLY" 扩展
-   - Chrome: [下载链接](https://chromewebstore.google.com/detail/get-cookiestxt-locally/cclelndahbckbenkjhflpdbanldigppf)
-2. 登录后点击扩展图标
-3. 复制 JSESSIONID 的值
-4. 运行上述命令保存
 
 Cookie 会自动保存到 `~/.kb_cache/cookies.json`
 
