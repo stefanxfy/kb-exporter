@@ -189,6 +189,7 @@ class KBExporter:
         # Extract images
         images = []
         if content_div:
+            # Method 1: Find <img> tags
             for img in content_div.find_all('img'):
                 src = img.get('src', '')
                 if '/download/attachments/' in src:
@@ -202,6 +203,33 @@ class KBExporter:
                             'filename': filename,
                             'url': full_url.split('?')[0]
                         })
+
+            # Method 2: Find draw.io macro images from JavaScript
+            # Draw.io macros store image URLs in script tags with readerOpts.imageUrl variable
+            html_str = str(content_div)
+            # Pattern to match: readerOpts.imageUrl = '' + '/download/attachments/...'
+            drawio_pattern = r"readerOpts\.imageUrl\s*=\s*''\s*\+\s*'([^']*)'"
+            for match in re.finditer(drawio_pattern, html_str):
+                img_url = match.group(1)
+                # Extract filename from URL
+                if '/download/attachments/' in img_url:
+                    # URL decode and extract filename
+                    from urllib.parse import unquote
+                    decoded_url = unquote(img_url)
+                    filename = decoded_url.split('/')[-1].split('?')[0]
+                    if filename:
+                        if img_url.startswith('/'):
+                            full_url = f"https://kb.cvte.com{img_url}"
+                        else:
+                            full_url = img_url
+                        # Remove query parameters for the download URL
+                        clean_url = full_url.split('?')[0] if '?' in img_url else full_url
+                        # Avoid duplicates
+                        if not any(img['filename'] == filename for img in images):
+                            images.append({
+                                'filename': filename,
+                                'url': clean_url
+                            })
 
         return title, content_div, images
 
