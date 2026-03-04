@@ -33,7 +33,8 @@ pip3 install requests beautifulsoup4
 
 ```bash
 mkdir -p ~/.claude/skills/kb-exporter/scripts
-cp SKILL.md scripts/export.py ~/.claude/skills/kb-exporter/
+cp SKILL.md ~/.claude/skills/kb-exporter/
+cp scripts/export.py ~/.claude/skills/kb-exporter/scripts/
 ```
 
 ---
@@ -130,7 +131,8 @@ kb-exporter/
 修改 `SKILL.md` 或 `scripts/export.py` 后，直接复制到 skills 目录：
 
 ```bash
-cp SKILL.md scripts/export.py ~/.claude/skills/kb-exporter/
+cp SKILL.md ~/.claude/skills/kb-exporter/
+cp scripts/export.py ~/.claude/skills/kb-exporter/scripts/
 ```
 
 重启 Claude Code 使更改生效。
