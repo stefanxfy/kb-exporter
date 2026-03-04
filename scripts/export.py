@@ -266,8 +266,8 @@ class KBExporter:
                     escaped_code = html_module.escape(code_text)
                     # In table cells, use <br> for line breaks (no <pre> to avoid breaking table structure)
                     code_with_br = escaped_code.replace('\n', '<br>')
-                    # Use simple <code> tag with <br> for line breaks
-                    parts.append(f'<code>{code_with_br}</code>')
+                    # Add <br> before and after code block for spacing
+                    parts.append(f'<br><code>{code_with_br}</code><br>')
                     processed_elements.add(code_block)
                 else:
                     # Fallback: try syntaxhighlighter div structure (old format)
@@ -300,7 +300,8 @@ class KBExporter:
                             import html as html_module
                             escaped_code = html_module.escape(code_text)
                             code_with_br = escaped_code.replace('\n', '<br>')
-                            parts.append(f'<code>{code_with_br}</code>')
+                            # Add <br> before and after code block for spacing
+                            parts.append(f'<br><code>{code_with_br}</code><br>')
                             processed_elements.add(code_block)
                     else:
                         # Final fallback: get all text
@@ -308,7 +309,7 @@ class KBExporter:
                         import html as html_module
                         escaped_code = html_module.escape(code_text)
                         code_with_br = escaped_code.replace('\n', '<br>')
-                        parts.append(f'<code>{code_with_br}</code>')
+                        parts.append(f'<br><code>{code_with_br}</code><br>')
                         processed_elements.add(code_block)
 
         # Check for draw.io macros
