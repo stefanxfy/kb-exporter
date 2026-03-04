@@ -133,10 +133,3 @@ cp kb-exporter.skill ~/.claude/skills/
 
 # 重启 Claude Code 使更改生效
 ```
-
-### 开发建议
-
-1. **修改 SKILL.md** - 更新 skill 描述或使用说明时修改
-2. **修改 scripts/export.py** - 调整导出逻辑、添加新功能时修改
-3. **测试** - 安装后在对话中测试功能是否符合预期
-4. **提交** - 测试通过后提交到 GitHub
