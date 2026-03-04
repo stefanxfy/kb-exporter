@@ -18,17 +18,20 @@ Export KB knowledge base pages to Markdown format with local images.
 
 When a kb.cvte.com URL is detected:
 
-1. **Ask user**: "检测到 KB 链接，是否要导出为 Markdown 文档？"
-2. **Check cookie**: If user confirms, check if `~/.kb_cache/cookies.json` exists
-3. **Validate cookie**: Try to fetch page with existing cookie
-4. **Handle expired cookie**:
+1. **First time in session**: Ask "检测到 KB 链接，是否要导出为 Markdown 文档？导出到哪个目录？(默认: 当前目录)"
+2. **Subsequent in session**: Use previously selected directory, only ask "是否要导出？"
+3. **Check cookie**: If user confirms, check if `~/.kb_cache/cookies.json` exists
+4. **Validate cookie**: Try to fetch page with existing cookie
+5. **Handle expired cookie**:
    - If cookie expired/invalid: "Cookie 已过期，请提供新的 JSESSIONID"
    - Parse user input (e.g., `JSESSIONID=ABC123` or just `ABC123`)
    - Auto-save to `~/.kb_cache/cookies.json`
-5. **Export**: Download page content and images to current working directory
-6. **Save**: Create `{title}/{title}.md` with images in `{title}/images/`
+6. **Export**: Download page content and images to selected directory (default: current working directory)
+7. **Save**: Create `{title}/{title}.md` with images in `{title}/images/`
 
-**Important**: Default output is the current working directory (where Claude Code is running), NOT the kb-exporter project directory.
+**Important**:
+- First export in session asks for directory, subsequent exports reuse it
+- Default output is the current working directory (where Claude Code is running)
 
 ## Quick Start
 
